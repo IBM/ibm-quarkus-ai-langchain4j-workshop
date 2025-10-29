@@ -4,6 +4,6 @@
     "graalvm-ce@21.0.2",
     "maven@3.9.11",
     "quarkus@latest",
-    "direnv@latest"
+    "direnv@2.37.1"
   ]
 }
