@@ -19,6 +19,10 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: write
+  pull-requests: write
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -56,6 +60,22 @@ jobs:
         working-directory: ${{ matrix.app }}
         run: ./mvnw -B clean verify -Dquarkus.http.host=0.0.0.0 -DskipITs=false
 
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Enable auto-merge for Dependabot PRs
+        if: (steps.metadata.outputs.update-type == 'version-update:semver-patch') || (steps.metadata.outputs.update-type == 'version-update:semver-minor') || (steps.metadata.outputs.update-type == 'version-update:semver-major')
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --auto --squash "$PR_URL"
 
   docs:
     runs-on: ubuntu-latest
