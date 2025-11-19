@@ -1,4 +1,4 @@
-name: Build
+name: Build2
 
 env:
   JVM_VERSION: '21'
