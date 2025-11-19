@@ -76,6 +76,12 @@ jobs:
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} .
           git checkout ${{ github.sha }}
 
+      # NEW STEP: Install the missing C libraries
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxslt-dev python3-dev
+
       # REPLACEMENT: actions/setup-python (Relies on runner's default Python)
       - name: Install Pipenv
         run: pip install pipenv
