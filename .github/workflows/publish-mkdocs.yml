@@ -97,6 +97,10 @@ jobs:
         working-directory: docs
         run: |
           pipenv install
+          
+          # 1. Generate the date string (e.g., 2023-10-27 10:00:00 UTC)
+          export BUILD_DATE=$(date -u "+%Y-%m-%d %H:%M:%S UTC")
+
           pipenv run mkdocs build --clean
           # Output is now in docs/site
 

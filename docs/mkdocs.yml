@@ -128,3 +128,6 @@ extra:
   manifest: manifest.webmanifest
   version:
     provider: mike
+  # !ENV [VARIABLE_NAME, DEFAULT_VALUE]
+  # If BUILD_DATE is missing (like on your local laptop), it defaults to "Development Build"
+  build_date: !ENV [BUILD_DATE, "Development Build"]
