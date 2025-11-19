@@ -55,6 +55,13 @@ jobs:
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} .
           git checkout ${{ github.sha }}
 
+      # UPDATED STEP: Switch to Java 21 manually
+      - name: Set Java 21 (Temurin)
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+
+
       # REPLACEMENT: actions/setup-java (Relies on runner's default Java)
       - name: Verify Java Version
         run: java -version
