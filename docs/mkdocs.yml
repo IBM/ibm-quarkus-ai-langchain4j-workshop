@@ -45,8 +45,8 @@ theme:
         icon: material/lightbulb-on
         name: Switch to light mode
   font:
-    text: Roboto
-    code: Ubuntu Mono
+    text: "IBM Plex Sans"
+    code: "IBM Plex Mono"
   icon:
     repo: fontawesome/brands/github
   logo: images/logo.png
