@@ -24,7 +24,7 @@
 <div class="md-copyright">
     <div class="md-copyright__highlight">
         <a href="https://creativecommons.org/licenses/by/3.0/">CC by 3.0</a> |
-        <a href="https://www.redhat.com/en/about/privacy-policy">Privacy Policy</a>
+        <a href="https://www.ibm.com/us-en/privacy">Privacy Policy</a>
         <br>
         Last updated: {{ config.extra.build_date }}
     
@@ -39,3 +39,33 @@
     </a>
     {% endif %}
 </div>
+
+<script>
+    (function() {
+      // 1. Find the element
+      var dateEl = document.getElementById('build-date');
+      
+      if (dateEl) {
+        // 2. Create a Date object from the UTC string
+        // The format "YYYY-MM-DD HH:MM:SS UTC" parses correctly in most browsers
+        var utcDate = new Date(dateEl.innerText.trim());
+  
+        // 3. check if date is valid
+        if (!isNaN(utcDate.getTime())) {
+          // 4. Format it to the user's locale (e.g., en-US, de-DE)
+          // options: "November 20, 2025 at 10:37 AM"
+          var localDate = new Intl.DateTimeFormat(undefined, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short' 
+          }).format(utcDate);
+  
+          // 5. Update the HTML
+          dateEl.innerText = localDate;
+        }
+      }
+    })();
+  </script>
