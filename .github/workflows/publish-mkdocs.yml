@@ -52,7 +52,13 @@ jobs:
       # REPLACEMENT: actions/checkout
       - name: Checkout Repository
         run: |
+          # 1. Clone the repo (gets main)
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} .
+                    
+          # 2. explicitly fetch the specific commit that triggered this workflow
+          git fetch origin ${{ github.sha }}
+
+          # 3. Now check it out
           git checkout ${{ github.sha }}
 
       # UPDATED STEP: Switch to Java 21 manually
