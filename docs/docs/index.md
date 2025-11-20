@@ -1,6 +1,6 @@
-# IBM Enterprise Build of Quarkus AI Hands-on Lab: Agents, MCP, and Gen AI
+# Quarkus AI with LangChain4j Hands-on Lab: Agents, MCP, and Gen AI
 
-Welcome to the IBM Enterprise Build of Quarkus AI Hands-on Lab! 
+Welcome to the Quarkus AI with LangChain4j Hands-on Lab! 
 This workshop will guide you through building **AI-infused applications** and **agentic systems** using **IBM Enterprise Build of Quarkus** and LangChain4j.
 
 You will learn how to:

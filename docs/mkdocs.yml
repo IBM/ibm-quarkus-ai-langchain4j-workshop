@@ -1,5 +1,5 @@
-site_name: Quarkus LangChain4j Workshop
-repo_url: https://github.com/quarkusio/quarkus-langchain4j-workshop
+site_name: Quarkus AI with LangChain4j Hands-on Lab
+repo_url: https://ibm.github.io/ibm-quarkus-ai-langchain4j-workshop
 edit_uri: edit/main/docs/
 docs_dir: docs
 
