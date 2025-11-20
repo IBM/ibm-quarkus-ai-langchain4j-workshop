@@ -73,7 +73,7 @@ jobs:
           ./mvnw -B clean verify -Dquarkus.http.host=0.0.0.0 -DskipITs=false
 
   # -------------------------------------------------------------
-  # JOB 2: Build the Documentation and Upload Artifact
+  # JOB 2: Build the Documentation and Upload Artifact 
   # -------------------------------------------------------------
   docs_build:
     runs-on: ubuntu-latest
