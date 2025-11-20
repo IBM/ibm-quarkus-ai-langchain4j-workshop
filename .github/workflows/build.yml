@@ -1,4 +1,4 @@
-name: Buils Matix - Publish MKDocs
+name: Build - Quarkus apps and instructions
 
 env:
   JVM_VERSION: '21'
