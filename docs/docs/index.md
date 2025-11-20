@@ -1,7 +1,7 @@
-# Quarkus AI with LangChain4j Hands-on Lab: Agents, MCP, and Gen AI
+# IBM Enterprise Build of Quarkus AI Hands-on Lab: Agents, MCP, and Gen AI
 
-Welcome to the Quarkus AI with LangChain4j Hands-on Lab!  
-This workshop will guide you through building **AI-infused applications** and **agentic systems** using **IBM build of Quarkus** and LangChain4j.
+Welcome to the IBM Enterprise Build of Quarkus AI Hands-on Lab! 
+This workshop will guide you through building **AI-infused applications** and **agentic systems** using **IBM Enterprise Build of Quarkus** and LangChain4j.
 
 You will learn how to:
 
@@ -22,7 +22,7 @@ Throughout the workshop, you will create an LLM-powered customer support chatbot
 
 The workshop is divided into two sections:
 
-- **Section 1 – AI-infused application (11 steps):**  
+- **Section 1 – AI-infused application (10 steps):**  
   You’ll progressively build a chatbot, starting with basic LLM integration and adding features such as structured outputs, guardrails, and RAG.
 
 - **Section 2 – Agentic systems (4 steps):**  
