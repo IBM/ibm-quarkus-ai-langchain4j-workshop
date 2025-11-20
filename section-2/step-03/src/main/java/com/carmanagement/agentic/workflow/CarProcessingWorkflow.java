@@ -15,10 +15,10 @@ public interface CarProcessingWorkflow {
     /**
      * Processes a car return by running feedback analysis and then appropriate actions.
      */
-    @SequenceAgent(outputName = "carProcessingAgentResult", subAgents = {
-            @SubAgent(type = FeedbackWorkflow.class, outputName = "carProcessingAgentResult"),
-            @SubAgent(type = ActionWorkflow.class, outputName = "carProcessingAgentResult"),
-            @SubAgent(type = CarConditionFeedbackAgent.class, outputName = "carProcessingAgentResult")
+    @SequenceAgent(outputKey = "carProcessingAgentResult", subAgents = {
+            @SubAgent(type = FeedbackWorkflow.class, outputKey = "feedbackResult"),
+            @SubAgent(type = ActionWorkflow.class, outputKey = "actionResult"),
+            @SubAgent(type = CarConditionFeedbackAgent.class, outputKey = "carCondition")
     })
     CarConditions processCarReturn(
             String carMake,
@@ -48,5 +48,3 @@ public interface CarProcessingWorkflow {
         return value != null && !value.isEmpty() && !value.toUpperCase().contains("NOT_REQUIRED");
     }
 }
-
-
