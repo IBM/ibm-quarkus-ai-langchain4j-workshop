@@ -1,0 +1,129 @@
+name: Buils Matix - Publish MKDocs
+
+env:
+  JVM_VERSION: '21'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: "workflow = ${{ github.workflow }}, ref = ${{ github.event.ref }}, pr = ${{ github.event.pull_request.id }}"
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: write
+  pull-requests: write
+  # NEW PERMISSIONS: Required for the 'deploy-pages' action
+  pages: write
+  id-token: write
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - section-1/step-01
+          - section-1/step-02
+          - section-1/step-03
+          - section-1/step-04
+          - section-1/step-05
+          - section-1/step-06
+          - section-1/step-07
+          - section-1/step-08
+          - section-1/step-09
+          - section-1/step-10
+          - section-1/step-11
+          - section-2/step-01
+          - section-2/step-02
+          - section-2/step-03
+          - section-2/step-04/multi-agent-system
+          - section-2/step-04/remote-a2a-agent
+
+    name: "Build ${{ matrix.app }}"
+    steps:
+      - name: Checkout Repository
+        run: |
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} .
+          git fetch origin ${{ github.sha }}
+          git checkout ${{ github.sha }}
+
+      - name: Set Java 21 (Temurin)
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+
+      - name: Verify Java Version
+        run: java -version
+
+      - name: Maven Build for ${{ matrix.app }}
+        working-directory: ${{ matrix.app }}
+        run: |
+          chmod +x mvnw
+          ./mvnw -B clean verify -Dquarkus.http.host=0.0.0.0 -DskipITs=false
+
+  # -------------------------------------------------------------
+  # JOB 2: Build the Documentation and Upload Artifact
+  # -------------------------------------------------------------
+  docs_build:
+    runs-on: ubuntu-latest
+    name: "Build Docs"
+    steps:
+      - name: Checkout Repository
+        run: |
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} .
+          git fetch origin ${{ github.sha }}
+          git checkout ${{ github.sha }}
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxslt-dev python3-dev
+
+      - name: Install Pipenv
+        run: pip install pipenv
+
+      - name: Generate documentation
+        working-directory: docs
+        run: |
+          pipenv install
+          export BUILD_DATE=$(date -u "+%Y-%m-%d %H:%M:%S UTC")
+          pipenv run mkdocs build --clean
+          # Output is in docs/site
+
+      # NEW STEP: Package the site folder into a special artifact
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/site
+
+  # -------------------------------------------------------------
+  # JOB 3: Deploy the Artifact (Only on Main)
+  # -------------------------------------------------------------
+  deploy:
+    needs: docs_build
+    if: github.ref == 'refs/heads/main'
+    
+    # Sets the permissions and environment for the deployment
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
