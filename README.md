@@ -1,8 +1,10 @@
 # Quarkus AI with LangChain4j Hands-on Lab: Agents, MCP, and Gen AI	
 
+[![Build - Quarkus apps and instructions](https://github.com/IBM/ibm-quarkus-ai-langchain4j-workshop/actions/workflows/build.yml/badge.svg)](https://github.com/IBM/ibm-quarkus-ai-langchain4j-workshop/actions/workflows/build.yml)
+
 A workshop to learn how to build AI-Infused applications with the IBM build of Quarkus and LangChain4j.
 
-The workshop is divided into several steps. You can follow the instructions available on the [workshop website](https://quarkus.io/quarkus-workshop-langchain4j/). 
+The workshop is divided into several steps. You can follow the instructions available on the [workshop website](https://ibm.github.io/ibm-quarkus-ai-langchain4j-workshop/). 
 Alternatively, you may serve the instructions locally by following the [docs/README file](docs/README.md).
 
 The final state of each step is available in the [step-XX](step-XX) directory.
