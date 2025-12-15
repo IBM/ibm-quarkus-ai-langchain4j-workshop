@@ -103,7 +103,7 @@ jobs:
 
       # NEW STEP: Package the site folder into a special artifact
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: docs/site
 
