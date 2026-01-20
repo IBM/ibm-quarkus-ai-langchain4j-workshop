@@ -6,6 +6,7 @@ let currentSortDirection = 'asc';
 let carsData = []; // Store the cars data globally for sorting
 let currentFilterText = '';
 let currentFilterField = 'all';
+let lastUpdatedCarId = null; // Track the last updated car for highlighting
 
 // Wait for the DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -68,7 +69,7 @@ function loadAllCars() {
             // Process the cars data
             populateFleetStatusTable(carsData);
             populateRentalReturnTable(carsData.filter(car => car.status === 'RENTED'));
-            populateCarWashTable(carsData.filter(car => car.status === 'AT_CAR_WASH'));
+            populateCleaningTable(carsData.filter(car => car.status === 'AT_CLEANING'));
         })
         .catch(error => {
             console.error('Error fetching cars:', error);
@@ -198,6 +199,15 @@ function populateFleetStatusTable(cars) {
     filteredCars.forEach(car => {
         const row = document.createElement('tr');
         
+        // Highlight the row if it was just updated
+        if (car.id === lastUpdatedCarId) {
+            row.classList.add('highlight-row');
+            // Clear the highlight after animation completes
+            setTimeout(() => {
+                lastUpdatedCarId = null;
+            }, 3000);
+        }
+        
         // Get status pill class based on car status
         const statusPillClass = getStatusPillClass(car.status);
         
@@ -242,13 +252,13 @@ function populateRentalReturnTable(cars) {
     });
 }
 
-// Function to populate the Car Wash table
-function populateCarWashTable(cars) {
-    const tableBody = document.getElementById('car-wash-table-body');
+// Function to populate the Cleaning table
+function populateCleaningTable(cars) {
+    const tableBody = document.getElementById('cleaning-table-body');
     tableBody.innerHTML = ''; // Clear existing rows
     
     if (cars.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6">No cars currently at car wash</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="6">No cars currently being cleaned</td></tr>';
         return;
     }
     
@@ -260,8 +270,8 @@ function populateCarWashTable(cars) {
             <td>${car.model}</td>
             <td>${car.year}</td>
             <td>
-                <form id="rentalReturnForm" onsubmit="returnFromCarWash(event, ${car.id})">
-                    <input type="text" class="feedback-input" id="carwash-feedback-${car.id}" placeholder="Enter feedback">
+                <form id="rentalReturnForm" onsubmit="returnFromCleaning(event, ${car.id})">
+                    <input type="text" class="feedback-input" id="cleaning-feedback-${car.id}" placeholder="Enter feedback">
                     <button class="return-button">Return</button>
                 </form>
             </td>
@@ -276,6 +286,13 @@ function populateCarWashTable(cars) {
 function returnFromRental(event, carId) {
     event.preventDefault();
     const feedback = document.getElementById(`rental-feedback-${carId}`).value;
+    const button = event.target.querySelector('button[type="submit"]');
+    
+    // Add loading state
+    button.disabled = true;
+    button.classList.add('loading');
+    const originalText = button.textContent;
+    button.textContent = 'Processing...';
     
     fetch(`/car-management/rental-return/${carId}?rentalFeedback=${encodeURIComponent(feedback)}`, {
         method: 'POST'
@@ -287,21 +304,33 @@ function returnFromRental(event, carId) {
         return response.text();
     })
     .then(data => {
+        lastUpdatedCarId = carId; // Mark this car for highlighting
         showNotification('Car successfully returned from rental');
         loadAllCars(); // Refresh all tables
     })
     .catch(error => {
         console.error('Error returning car from rental:', error);
         displayError('Failed to process rental return. Please try again.');
+        // Re-enable button on error
+        button.disabled = false;
+        button.classList.remove('loading');
+        button.textContent = originalText;
     });
 }
 
-// Function to return a car from car wash
-function returnFromCarWash(event, carId) {
+// Function to return a car from cleaning
+function returnFromCleaning(event, carId) {
     event.preventDefault();
-    const feedback = document.getElementById(`carwash-feedback-${carId}`).value;
+    const feedback = document.getElementById(`cleaning-feedback-${carId}`).value;
+    const button = event.target.querySelector('button');
     
-    fetch(`/car-management/car-wash-return/${carId}?carWashFeedback=${encodeURIComponent(feedback)}`, {
+    // Add loading state
+    button.disabled = true;
+    button.classList.add('loading');
+    const originalText = button.textContent;
+    button.textContent = 'Processing...';
+    
+    fetch(`/car-management/cleaningReturn/${carId}?cleaningFeedback=${encodeURIComponent(feedback)}`, {
         method: 'POST'
     })
     .then(response => {
@@ -311,12 +340,17 @@ function returnFromCarWash(event, carId) {
         return response.text();
     })
     .then(data => {
-        showNotification('Car successfully returned from car wash');
+        lastUpdatedCarId = carId; // Mark this car for highlighting
+        showNotification('Car successfully returned from cleaning');
         loadAllCars(); // Refresh all tables
     })
     .catch(error => {
-        console.error('Error returning car from car wash:', error);
-        displayError('Failed to process car wash return. Please try again.');
+        console.error('Error returning car from cleaning:', error);
+        displayError('Failed to process cleaning return. Please try again.');
+        // Re-enable button on error
+        button.disabled = false;
+        button.classList.remove('loading');
+        button.textContent = originalText;
     });
 }
 
@@ -326,8 +360,8 @@ function getStatusClass(status) {
     switch(status) {
         case 'RENTED':
             return 'status-rented';
-        case 'AT_CAR_WASH':
-            return 'status-carwash';
+        case 'AT_CLEANING':
+            return 'status-cleaning';
         case 'AVAILABLE':
             return 'status-available';
         default:
@@ -340,8 +374,8 @@ function getStatusPillClass(status) {
     switch(status) {
         case 'RENTED':
             return 'status-pill-rented';
-        case 'AT_CAR_WASH':
-            return 'status-pill-carwash';
+        case 'AT_CLEANING':
+            return 'status-pill-cleaning';
         case 'AVAILABLE':
             return 'status-pill-available';
         default:
@@ -354,8 +388,8 @@ function getStatusDisplay(status) {
     switch(status) {
         case 'RENTED':
             return 'Rented';
-        case 'AT_CAR_WASH':
-            return 'At Car Wash';
+        case 'AT_CLEANING':
+            return 'At Cleaning';
         case 'AVAILABLE':
             return 'Available to Rent';
         default:

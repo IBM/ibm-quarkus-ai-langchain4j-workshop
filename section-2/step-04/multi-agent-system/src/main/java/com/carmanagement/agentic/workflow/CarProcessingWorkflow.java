@@ -5,7 +5,6 @@ import com.carmanagement.model.CarConditions;
 import com.carmanagement.model.RequiredAction;
 import dev.langchain4j.agentic.declarative.Output;
 import dev.langchain4j.agentic.declarative.SequenceAgent;
-import dev.langchain4j.agentic.declarative.SubAgent;
 
 /**
  * Workflow for processing car returns using a sequence of agents.
@@ -15,11 +14,8 @@ public interface CarProcessingWorkflow {
     /**
      * Processes a car return by running feedback analysis and then appropriate actions.
      */
-    @SequenceAgent(outputKey = "carProcessingAgentResult", subAgents = {
-        @SubAgent(type = FeedbackWorkflow.class, outputKey = "feedbackResult"),
-        @SubAgent(type = ActionWorkflow.class, outputKey = "actionResult"),
-        @SubAgent(type = CarConditionFeedbackAgent.class, outputKey = "carCondition")
-    })
+    @SequenceAgent(outputKey = "carProcessingAgentResult",
+            subAgents = { FeedbackWorkflow.class, ActionWorkflow.class, CarConditionFeedbackAgent.class })
     CarConditions processCarReturn(
             String carMake,
             String carModel,
@@ -27,19 +23,19 @@ public interface CarProcessingWorkflow {
             Long carNumber,
             String carCondition,
             String rentalFeedback,
-            String carWashFeedback,
+            String cleaningFeedback,
             String maintenanceFeedback);
 
     @Output
-    static CarConditions output(String carCondition, String dispositionRequest, String maintenanceRequest, String carWashRequest) {
+    static CarConditions output(String carCondition, String dispositionRequest, String maintenanceRequest, String cleaningRequest) {
         RequiredAction requiredAction;
         // Check maintenance first (higher priority)
         if (isRequired(dispositionRequest)) {
             requiredAction = RequiredAction.DISPOSITION;
         } else if (isRequired(maintenanceRequest)) {
             requiredAction = RequiredAction.MAINTENANCE;
-        } else if (isRequired(carWashRequest)) {
-            requiredAction = RequiredAction.CAR_WASH;
+        } else if (isRequired(cleaningRequest)) {
+            requiredAction = RequiredAction.CLEANING;
         } else {
             requiredAction = RequiredAction.NONE;
         }
