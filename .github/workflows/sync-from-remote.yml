@@ -1,0 +1,166 @@
+name: Sync from Remote Repository
+
+on:
+  # Run daily at 2 AM UTC to check for updates
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    name: Sync from quarkus-workshop-langchain4j
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Add Remote Repository
+        run: |
+          git remote add source https://github.com/quarkusio/quarkus-workshop-langchain4j.git || true
+          git remote -v
+      
+      - name: Fetch Remote Changes
+        run: |
+          git fetch source
+          git fetch origin
+      
+      - name: Check for Updates
+        id: check_updates
+        run: |
+          # Get the latest commit from remote main
+          REMOTE_COMMIT=$(git rev-parse source/main)
+          echo "remote_commit=$REMOTE_COMMIT" >> $GITHUB_OUTPUT
+          
+          # Check if we already have this commit
+          if git merge-base --is-ancestor $REMOTE_COMMIT HEAD; then
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+            echo "✅ Repository is already up to date with remote"
+          else
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+            echo "🔄 Updates available from remote repository"
+          fi
+      
+      - name: Create Sync Branch
+        if: steps.check_updates.outputs.has_updates == 'true'
+        run: |
+          BRANCH_NAME="sync-remote-$(date +%Y%m%d-%H%M%S)"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+          git checkout -b $BRANCH_NAME
+      
+      - name: Merge Remote Changes
+        if: steps.check_updates.outputs.has_updates == 'true'
+        id: merge
+        run: |
+          # Attempt to merge remote changes
+          if git merge source/main --no-edit; then
+            echo "merge_status=success" >> $GITHUB_OUTPUT
+            echo "✅ Successfully merged remote changes"
+          else
+            echo "merge_status=conflict" >> $GITHUB_OUTPUT
+            echo "⚠️ Merge conflicts detected"
+            # Abort the merge to create a clean state for the PR
+            git merge --abort
+            # Create a merge commit that shows conflicts
+            git merge source/main --no-commit --no-ff || true
+            git commit -m "Sync from remote: merge conflicts need resolution" || true
+          fi
+      
+      - name: Push Sync Branch
+        if: steps.check_updates.outputs.has_updates == 'true'
+        run: |
+          git push origin ${{ env.branch_name }}
+      
+      - name: Create Pull Request
+        if: steps.check_updates.outputs.has_updates == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const mergeStatus = '${{ steps.merge.outputs.merge_status }}';
+            const remoteCommit = '${{ steps.check_updates.outputs.remote_commit }}';
+            
+            let body = `## 🔄 Sync from Remote Repository
+            
+            This PR syncs changes from the remote repository:
+            - **Remote Repository**: https://github.com/quarkusio/quarkus-workshop-langchain4j
+            - **Remote Commit**: ${remoteCommit}
+            - **Sync Date**: ${new Date().toISOString()}
+            `;
+            
+            if (mergeStatus === 'conflict') {
+              body += `
+            
+            ### ⚠️ Merge Conflicts Detected
+            
+            This PR contains merge conflicts that need to be resolved manually.
+            Please review the conflicts and resolve them before merging.
+            
+            **Steps to resolve:**
+            1. Check out this branch locally
+            2. Resolve the conflicts
+            3. Commit the resolved changes
+            4. Push to this branch
+            `;
+            } else {
+              body += `
+            
+            ### ✅ Clean Merge
+            
+            All changes from the remote repository have been merged successfully without conflicts.
+            Please review the changes before merging.
+            `;
+            }
+            
+            body += `
+            
+            ---
+            *This PR was automatically created by the sync-from-remote workflow.*
+            `;
+            
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Sync from quarkus-workshop-langchain4j (${new Date().toISOString().split('T')[0]})`,
+              head: '${{ env.branch_name }}',
+              base: 'main',
+              body: body,
+              maintainer_can_modify: true
+            });
+            
+            console.log(`Created PR #${pr.number}: ${pr.html_url}`);
+            
+            // Add labels
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: mergeStatus === 'conflict' ? ['sync', 'remote-sync', 'conflicts'] : ['sync', 'remote-sync']
+            });
+      
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Sync Summary" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check_updates.outputs.has_updates }}" == "true" ]; then
+            echo "✅ Sync completed - PR created" >> $GITHUB_STEP_SUMMARY
+            echo "- Branch: ${{ env.branch_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Merge Status: ${{ steps.merge.outputs.merge_status }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ Repository is up to date" >> $GITHUB_STEP_SUMMARY
+          fi
+
+# Made with Bob
