@@ -2,6 +2,8 @@ name: Build - Quarkus apps and instructions
 
 env:
   JVM_VERSION: '21'
+  # Force Node.js 24 for GitHub Actions
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   push:
