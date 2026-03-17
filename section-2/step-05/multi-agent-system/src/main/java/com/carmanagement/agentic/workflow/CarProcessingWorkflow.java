@@ -1,49 +1,44 @@
 package com.carmanagement.agentic.workflow;
 
 import com.carmanagement.agentic.agents.CarConditionFeedbackAgent;
+import com.carmanagement.agentic.agents.FleetSupervisorAgent;
 import com.carmanagement.model.CarConditions;
-import com.carmanagement.model.CarAssignment;
 import dev.langchain4j.agentic.declarative.Output;
 import dev.langchain4j.agentic.declarative.SequenceAgent;
+import io.quarkus.logging.Log;
 
 /**
- * Workflow for processing car returns using a sequence of agents.
+ * Workflow for processing car returns using a supervisor agent for complete orchestration.
+ * The supervisor coordinates both feedback analysis and action agents.
  */
 public interface CarProcessingWorkflow {
 
     /**
-     * Processes a car return by running feedback analysis and then appropriate actions.
+     * Processes a car return by first analyzing feedback, then using supervisor to coordinate actions.
+     * FeedbackWorkflow produces cleaningRequest, maintenanceRequest, and dispositionRequest.
+     * FleetSupervisorAgent then uses these to coordinate action agents.
+     * CarConditionFeedbackAgent determines the final car assignment and condition.
      */
+    // --8<-- [start:sequence-agent]
     @SequenceAgent(outputKey = "carProcessingAgentResult",
-            subAgents = { FeedbackWorkflow.class, CarAssignmentWorkflow.class, CarConditionFeedbackAgent.class })
+            subAgents = { FeedbackWorkflow.class, FleetSupervisorAgent.class, CarConditionFeedbackAgent.class })
+    // --8<-- [end:sequence-agent]
     CarConditions processCarReturn(
             String carMake,
             String carModel,
             Integer carYear,
-            Long carNumber,
+            Integer carNumber,
             String carCondition,
             String rentalFeedback,
             String cleaningFeedback,
             String maintenanceFeedback);
 
     @Output
-    static CarConditions output(String carCondition, String dispositionRequest, String maintenanceRequest, String cleaningRequest) {
-        CarAssignment carAssignment;
-        // Check maintenance first (higher priority)
-        if (isRequired(dispositionRequest)) {
-            carAssignment = CarAssignment.DISPOSITION;
-        } else if (isRequired(maintenanceRequest)) {
-            carAssignment = CarAssignment.MAINTENANCE;
-        } else if (isRequired(cleaningRequest)) {
-            carAssignment = CarAssignment.CLEANING;
-        } else {
-            carAssignment = CarAssignment.NONE;
-        }
-        return new CarConditions(carCondition, carAssignment);
-    }
-
-    private static boolean isRequired(String value) {
-        return value != null && !value.isEmpty() && !value.toUpperCase().contains("NOT_REQUIRED");
+    static CarConditions output(CarConditions carConditions) {
+        // CarConditionFeedbackAgent handles all logic for determining
+        // the final car assignment and condition description.
+        Log.debug("CarConditions: " + carConditions.generalCondition() + " → " + carConditions.carAssignment());
+        return carConditions;
     }
 }
 

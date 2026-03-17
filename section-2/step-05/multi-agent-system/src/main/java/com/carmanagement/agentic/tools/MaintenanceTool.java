@@ -1,12 +1,13 @@
 package com.carmanagement.agentic.tools;
 
 import dev.langchain4j.agent.tool.Tool;
-import jakarta.enterprise.context.Dependent;
+import io.quarkus.logging.Log;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * Tool for requesting car maintenance operations.
  */
-@Dependent
+@ApplicationScoped
 public class MaintenanceTool {
 
     /**
@@ -21,12 +22,13 @@ public class MaintenanceTool {
      * @param brakeService Whether to request brake service
      * @param engineService Whether to request engine service
      * @param transmissionService Whether to request transmission service
+     * @param bodyWork Whether to request body work (dent repair, paint, collision repair)
      * @param requestText The maintenance request text
      * @return A summary of the maintenance request
      */
-    @Tool("Requests maintenance with the specified options")
+    @Tool("Requests maintenance with the specified options including body work for dents, paint, and collision repairs")
     public String requestMaintenance(
-            Long carNumber,
+            Integer carNumber,
             String carMake,
             String carModel,
             Integer carYear,
@@ -35,10 +37,10 @@ public class MaintenanceTool {
             boolean brakeService,
             boolean engineService,
             boolean transmissionService,
+            boolean bodyWork,
             String requestText) {
         
-        // In a real implementation, this would make an API call to a maintenance service
-        // or update a database with the maintenance request
+        // In a more elaborate implementation, we might make an API call to a maintenance service here
         
         StringBuilder summary = new StringBuilder();
         summary.append("Maintenance requested for ").append(carMake).append(" ")
@@ -65,12 +67,17 @@ public class MaintenanceTool {
             summary.append("- Transmission service\n");
         }
         
+        if (bodyWork) {
+            summary.append("- Body work (dent repair, paint, collision repair)\n");
+        }
+        
         if (requestText != null && !requestText.isEmpty()) {
             summary.append("Additional notes: ").append(requestText);
         }
         
+        Log.info("  └─ MaintenanceAgent activated");
         String result = summary.toString();
-        System.out.println("\uD83D\uDE97 MaintenanceTool result: " + result);
+        Log.debug("🚗 MaintenanceTool result: " + result);
         return result;
     }
 }

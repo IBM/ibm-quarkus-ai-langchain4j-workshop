@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.quarkiverse.langchain4j</groupId>
-    <artifactId>quarkus-langchain4j-workshop-08-mcp-server</artifactId>
+    <artifactId>quarkus-workshop-langchain4j-08-mcp-server</artifactId>
     <name>Quarkus LangChain4j - Sample - Model Context Protocol Server</name>
     <version>1.0-SNAPSHOT</version>
 
@@ -17,12 +17,12 @@
 
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.32.3</quarkus.platform.version>
+        <quarkus.platform.version>3.31.4</quarkus.platform.version>
 
-        <quarkus-langchain4j.version>1.7.4</quarkus-langchain4j.version>
+        <quarkus-langchain4j.version>1.8.0.CR2</quarkus-langchain4j.version>
 
         <skipITs>true</skipITs>
-        <surefire-plugin.version>3.5.5</surefire-plugin.version>
+        <surefire-plugin.version>3.5.4</surefire-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>io.quarkiverse.mcp</groupId>
             <artifactId>quarkus-mcp-server-sse</artifactId>
-            <version>1.10.3</version>
+            <version>1.9.1</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -64,7 +64,7 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit5</artifactId>
+            <artifactId>quarkus-junit</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

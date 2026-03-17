@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>dev.langchain4j</groupId>
-    <artifactId>quarkus-langchain4j-workshop-03</artifactId>
+    <artifactId>quarkus-workshop-langchain4j-03</artifactId>
     <version>1.0.0</version>
 
     <properties>
@@ -16,8 +16,8 @@
 
         <compiler-plugin.version>3.15.0</compiler-plugin.version>
 
-        <quarkus.platform.version>3.32.3</quarkus.platform.version>
-        <quarkus-langchain4j.version>1.7.4</quarkus-langchain4j.version>
+        <quarkus.platform.version>3.31.4</quarkus.platform.version>
+        <quarkus-langchain4j.version>1.8.0.CR2</quarkus-langchain4j.version>
     </properties>
 
     <dependencyManagement>

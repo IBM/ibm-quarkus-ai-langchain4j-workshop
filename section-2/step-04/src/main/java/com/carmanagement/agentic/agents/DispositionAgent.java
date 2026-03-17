@@ -6,7 +6,6 @@ import dev.langchain4j.service.UserMessage;
 
 /**
  * Agent that determines how to dispose of a car based on value, condition, and damage.
- * This is a LOCAL agent - in step-05 it will be converted to a remote A2A agent.
  */
 public interface DispositionAgent {
 
@@ -46,7 +45,7 @@ public interface DispositionAgent {
             String carMake,
             String carModel,
             Integer carYear,
-            Long carNumber,
+            Integer carNumber,
             String carCondition,
             String carValue,
             String rentalFeedback);

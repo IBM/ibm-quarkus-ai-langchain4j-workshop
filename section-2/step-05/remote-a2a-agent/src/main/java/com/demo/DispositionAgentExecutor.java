@@ -7,6 +7,7 @@ import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.tasks.TaskUpdater;
+import io.quarkus.logging.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class DispositionAgentExecutor {
         return new AgentExecutor() {
             @Override
             public void execute(RequestContext context, EventQueue eventQueue) throws JSONRPCError {
+                Log.info("Remote A2A DispositionAgent called");
 
                 TaskUpdater updater = new TaskUpdater(context, eventQueue);
                 if (context.getTask() == null) {
@@ -49,20 +51,25 @@ public class DispositionAgentExecutor {
                 if (message.getParts() != null) {
                     for (Part<?> part : message.getParts()) {
                         if (part instanceof TextPart textPart) {
-                            System.out.println("\uD83D\uDCAC Text part: " + textPart.getText());
                             inputs.add(textPart.getText());
                         }
                     }
                 }
             
-                // Call the agent with all parameters as strings
+                Log.debugf("Processing disposition for car %s %s %s (number: %s)",
+                    inputs.get(0), inputs.get(1), inputs.get(2), inputs.get(3));
+                
+                // Call the agent with all parameters
                 String agentResponse = dispositionAgent.processDisposition(
                         inputs.get(0),                      // carMake
                         inputs.get(1),                      // carModel
                         Integer.parseInt(inputs.get(2)),    // carYear
-                        Long.parseLong(inputs.get(3)),      // carNumber
+                        Integer.parseInt(inputs.get(3)),    // carNumber
                         inputs.get(4),                      // carCondition
-                        inputs.get(5));                     // dispositionRequest
+                        inputs.get(5),                      // carValue
+                        inputs.get(6));                     // rentalFeedback
+                
+                Log.debugf("DispositionAgent response: %s", agentResponse);
                 
                 // Return the result
                 TextPart responsePart = new TextPart(agentResponse, null);

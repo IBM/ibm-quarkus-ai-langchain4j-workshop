@@ -8,6 +8,7 @@ import com.carmanagement.agentic.workflow.CarProcessingWorkflow;
 import com.carmanagement.model.CarConditions;
 import com.carmanagement.model.CarInfo;
 import com.carmanagement.model.CarStatus;
+import io.quarkus.logging.Log;
 
 /**
  * Service for managing car returns from various operations.
@@ -28,13 +29,14 @@ public class CarManagementService {
      * @return Result of the processing
      */
     @Transactional
-    public String processCarReturn(Long carNumber, String rentalFeedback, String cleaningFeedback, String maintenanceFeedback) {
+    public String processCarReturn(Integer carNumber, String rentalFeedback, String cleaningFeedback,
+                                   String maintenanceFeedback) {
         CarInfo carInfo = CarInfo.findById(carNumber);
         if (carInfo == null) {
             return "Car not found with number: " + carNumber;
         }
-
-        // Process the car return using the workflow and get the AgenticScope
+                        
+        // Process the car return using the workflow with supervisor
         CarConditions carConditions = carProcessingWorkflow.processCarReturn(
                 carInfo.make,
                 carInfo.model,
@@ -44,7 +46,7 @@ public class CarManagementService {
                 rentalFeedback != null ? rentalFeedback : "",
                 cleaningFeedback != null ? cleaningFeedback : "",
                 maintenanceFeedback != null ? maintenanceFeedback : "");
-
+        
         // Update the car's condition with the result from CarConditionFeedbackAgent
         carInfo.condition = carConditions.generalCondition();
 
@@ -52,6 +54,7 @@ public class CarManagementService {
         switch (carConditions.carAssignment()) {
             case DISPOSITION:
                 carInfo.status = CarStatus.PENDING_DISPOSITION;
+                Log.info("Car marked for disposition - awaiting final decision");
                 break;
             case MAINTENANCE:
                 carInfo.status = CarStatus.IN_MAINTENANCE;

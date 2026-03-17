@@ -31,13 +31,14 @@ public interface CleaningAgent {
         Cleaning Request:
         {cleaningRequest}
         """)
-    @Agent(description = "Cleaning specialist. Determines what cleaning services are needed.", outputKey = "cleaningAction")
+    @Agent(description = "Cleaning specialist. Determines what cleaning services are needed.",
+            outputKey = "analysisResult")
     @ToolBox(CleaningTool.class)
     String processCleaning(
             String carMake,
             String carModel,
             Integer carYear,
-            Long carNumber,
+            Integer carNumber,
             String cleaningRequest);
 }
 
