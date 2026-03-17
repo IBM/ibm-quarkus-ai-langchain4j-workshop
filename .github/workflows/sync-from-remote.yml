@@ -80,13 +80,26 @@ jobs:
             git commit -m "Sync from remote: merge conflicts need resolution" || true
           fi
       
-      - name: Push Sync Branch
+      - name: Check for Actual Changes
         if: steps.check_updates.outputs.has_updates == 'true'
+        id: check_changes
+        run: |
+          # Check if there are actual file changes
+          if git diff --quiet HEAD source/main; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No actual file changes detected"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "✅ File changes detected"
+          fi
+      
+      - name: Push Sync Branch
+        if: steps.check_updates.outputs.has_updates == 'true' && steps.check_changes.outputs.has_changes == 'true'
         run: |
           git push origin ${{ env.branch_name }}
       
       - name: Create Pull Request
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.check_updates.outputs.has_updates == 'true' && steps.check_changes.outputs.has_changes == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -156,9 +169,13 @@ jobs:
         run: |
           echo "## Sync Summary" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.check_updates.outputs.has_updates }}" == "true" ]; then
-            echo "✅ Sync completed - PR created" >> $GITHUB_STEP_SUMMARY
-            echo "- Branch: ${{ env.branch_name }}" >> $GITHUB_STEP_SUMMARY
-            echo "- Merge Status: ${{ steps.merge.outputs.merge_status }}" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ steps.check_changes.outputs.has_changes }}" == "true" ]; then
+              echo "✅ Sync completed - PR created" >> $GITHUB_STEP_SUMMARY
+              echo "- Branch: ${{ env.branch_name }}" >> $GITHUB_STEP_SUMMARY
+              echo "- Merge Status: ${{ steps.merge.outputs.merge_status }}" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "ℹ️ No file changes detected - repositories are in sync" >> $GITHUB_STEP_SUMMARY
+            fi
           else
             echo "✅ Repository is up to date" >> $GITHUB_STEP_SUMMARY
           fi
