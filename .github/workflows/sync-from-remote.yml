@@ -84,13 +84,14 @@ jobs:
         if: steps.check_updates.outputs.has_updates == 'true'
         id: check_changes
         run: |
-          # Check if there are actual file changes
-          if git diff --quiet HEAD source/main; then
+          # Check if the merge created any new commits
+          COMMITS_AHEAD=$(git rev-list --count origin/main..HEAD)
+          if [ "$COMMITS_AHEAD" -eq "0" ]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ No actual file changes detected"
+            echo "ℹ️ No new commits - repositories are in sync"
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "✅ File changes detected"
+            echo "✅ Found $COMMITS_AHEAD new commit(s)"
           fi
       
       - name: Push Sync Branch
