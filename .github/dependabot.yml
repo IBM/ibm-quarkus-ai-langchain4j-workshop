@@ -1,12 +1,15 @@
 version: 2
 updates:
-  #  Main branch
+  # Main branch — Maven
   - package-ecosystem: maven
     directory: "/"
     schedule:
-      interval: daily
+      interval: weekly
     open-pull-requests-limit: 10
-  - package-ecosystem: "github-actions"
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: weekly
+    open-pull-requests-limit: 10

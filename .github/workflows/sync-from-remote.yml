@@ -11,6 +11,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  checks: read
 
 jobs:
   sync:
@@ -101,7 +102,7 @@ jobs:
       
       - name: Create Pull Request
         if: steps.check_updates.outputs.has_updates == 'true' && steps.check_changes.outputs.has_changes == 'true'
-        uses: actions/github-script@v9
+        uses: actions/github-script@v8
         with:
           script: |
             const mergeStatus = '${{ steps.merge.outputs.merge_status }}';
@@ -162,8 +163,19 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: pr.number,
-              labels: mergeStatus === 'conflict' ? ['sync', 'remote-sync', 'conflicts'] : ['sync', 'remote-sync']
+              labels: mergeStatus === 'conflict' ? ['sync', 'remote-sync', 'conflicts'] : ['sync', 'remote-sync', 'auto-merge']
             });
+            
+            // Auto-merge clean merges — conflicts require human review
+            if (mergeStatus !== 'conflict') {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                merge_method: 'merge'
+              });
+              console.log(`Auto-merged PR #${pr.number}`);
+            }
       
       - name: Summary
         if: always()
