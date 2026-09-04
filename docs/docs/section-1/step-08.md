@@ -87,11 +87,11 @@ The LangChain4j MCP dependency will allow us to call remote MCP servers. Remembe
 
 ## Configuring the MCP client
 
-Now that we have the dependency, we just need to configure it to call our MCP server using the http transport-type. You can do that in the `src/main/resources/application.properties` file:
+Now that we have the dependency, we just need to configure it to call our MCP server using the streamable-http transport-type. You can do that in the `src/main/resources/application.properties` file:
 
 ```properties title="application.properties"
-quarkus.langchain4j.mcp.weather.transport-type=http
-quarkus.langchain4j.mcp.weather.url=http://localhost:8081/mcp/sse/
+quarkus.langchain4j.mcp.weather.transport-type=streamable-http
+quarkus.langchain4j.mcp.weather.url=http://localhost:8081/mcp/
 ```
 
 Notice that we have used the "weather" name. We will reference this in the AI service to use this particular MCP server. 
